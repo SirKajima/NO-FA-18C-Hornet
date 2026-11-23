@@ -37,5 +37,5 @@ The plugin targets the game's Mono runtime and references the game's own DLLs, B
 ## Editor scripts
 The scripts in `unity/Assets/Editor/` are the tooling used to make the mod: prefab setup, model import, collider and status-display generation, Multi-Missile ops. Several contain absolute paths from the author's machine (`E:/Project/NOModding/...`). `F14Bridge.cs` is a small file-polling bridge (`E:/Project/NOModding/F14Bridge/job.txt` runs a static method) used for automated builds. Treat them as reference: read them before running, and change the paths for your setup.
 
-## Known gap in the Unity project
-Before 0.4.0 the Hornet used an earlier placeholder model. A few prefab references still point at that model's `Model/FA-18C.FBX` (one material slot and the simplified main-gear leg meshes). Its source and licence couldn't be confirmed, so it is **not** in this repo, and those references show as missing in Unity. The release `.nobp` is unaffected. To rebuild from source, swap those gear-leg meshes and the material for your own (or for parts of the CC BY model) first.
+## Older model files
+`Mods/FA18C/Model/` holds the earlier placeholder model ("McDonnell Douglas F/A-18C Hornet 3D Model" by Rhine_Lab_Muelsyse, CC BY 4.0). The prefab still uses it for the simplified main-gear legs and one material slot, so keep the folder when you rebuild.

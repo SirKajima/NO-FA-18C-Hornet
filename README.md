@@ -267,6 +267,7 @@ Edit `BepInEx\config\fa18c.hornet.systems.cfg` (created after the first launch):
 
 ## Credits
 - 3D model: "F/A-18C Late with AGM-65G" by **Jeyhun1985** on Sketchfab, licensed **CC BY 4.0**. The model was modified for this mod (see [CREDITS.md](CREDITS.md)).
+- Main gear legs and one material: "McDonnell Douglas F/A-18C Hornet 3D Model" by **Rhine_Lab_Muelsyse** on Sketchfab, licensed **CC BY 4.0** (the model used before 0.4.0).
 - Livery lettering: Saira font family (SIL Open Font License).
 - Built with the **Blueprinter** framework for Nuclear Option, plus BepInEx and Harmony.
 
