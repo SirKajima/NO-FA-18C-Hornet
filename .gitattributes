@@ -1,2 +1,13 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.bmp binary
+*.fbx binary
+*.FBX binary
+*.nobp binary
+*.dll binary
+*.asset text eol=lf
+*.prefab text eol=lf
+*.meta text eol=lf
+*.mat text eol=lf
+*.catapults -text

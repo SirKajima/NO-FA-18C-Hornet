@@ -1,0 +1,4 @@
+# FA-18C Hornet (FA18C mod) catapult settings for Aryx's carriers (Penumbra supercarrier / Helion).
+# definition name | clutch parent | clutch transform position | detection radius | release speed m/s | max accel g | full throttle delay s | should deploy blast deflectors
+# Clutch = bottom of the nose wheel, in the 'cockpit' part's local space (the nose gear hangs off that part).
+FA18C_AircraftDefinition | cockpit | 0, -2.596, -1.015 | 1.25 | 85 | 4.5 | 1 | true
