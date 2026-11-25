@@ -2,7 +2,7 @@
 
 A US Navy F/A-18C Hornet for Nuclear Option. It is built with the Blueprinter framework, plus a small BepInEx plugin for the flight systems that Blueprinter can't do on its own. The flight model is tuned to real-world F/A-18C figures from the NATOPS flight manuals (NFM-000, NFM-200 and NFM-210), except fuel burn, which is slightly generous.
 
-**Current release:** `FA-18C Hornet_0.6.4.nobp` + `FA18C.HornetSystems.dll` 0.6.4
+**Current release:** `FA-18C Hornet_0.7.0.nobp` + `FA18C.HornetSystems.dll` 0.7.0 (extended update)
 
 **Download:** grab the files from the [latest release](https://github.com/SirKajima/NO-FA-18C-Hornet/releases/latest), or from the [`release/`](release/) folder of this repo.
 
@@ -16,9 +16,9 @@ A US Navy F/A-18C Hornet for Nuclear Option. It is built with the Blueprinter fr
 You need BepInEx and the Blueprinter mod already installed.
 
 1. Delete any older `FA-18C Hornet_*.nobp` from your `BepInEx\plugins` folder (and its subfolders). Two versions at once will conflict.
-2. Copy both files from the `release/` folder into `Nuclear Option\BepInEx\plugins\` (a subfolder such as `plugins\FA18C\` is fine):
-   - `FA-18C Hornet_0.6.4.nobp`
-   - `FA18C.HornetSystems.dll`
+2. Copy both files from the `release/` folder (or the release download) into `Nuclear Option\BepInEx\plugins\` (a subfolder such as `plugins\FA18C\` is fine):
+   - `FA-18C Hornet_0.7.0.nobp`
+   - `FA18C.HornetSystems.dll` 0.7.0 (keep only one copy; the 0.7.0 jet and plugin go together)
 3. Start the game. The Hornet appears in the hangar aircraft list.
 4. Optional, with [Aryx's FS-41 Eclipse](https://github.com/Aryx3D/Aryx-s-FS-41-Eclipse) mod: the Hornet can spawn on the **Penumbra Class Supercarrier** and the **Helion Class Carrier** and use their catapults. Put `release/FA18C.catapults` in `BepInEx\plugins\com.nikkorap.blueprinter\addons\aryx.fs41\`. In multiplayer **every player** needs this file, not just the host: each player's own game runs their catapult launch. See [Compatibility](#compatibility-with-other-mods-optional-soft-dependencies) for how to launch and trap.
 5. Optional, with [kingwixly's **Multi-Missile**](https://github.com/kingwixly/Multi-Missile/) mod (1.5.0): its missiles and bombs appear on the Hornet's stations automatically. Nothing extra to install. Without Multi-Missile the Hornet works as before.
@@ -73,6 +73,22 @@ Neither mod below is required. The Hornet has no hard reference to them: if one 
 
 - Multi-Missile's rack and missile shapes are its own. The plugin stops them from damaging the Hornet when it spawns, even where a rack touches a neighbouring part (setting `MountSelfCollisionFix`, on by default).
 - **Multiplayer:** every player needs Multi-Missile and the same Hornet files.
+
+---
+
+## Make your own livery (Livery Paint Kit)
+
+The **Livery Paint Kit** is a separate download on the [releases page](https://github.com/SirKajima/NO-FA-18C-Hornet/releases/latest) (`LiveryPaintKit_FA18C.zip`). It has everything needed to paint a custom livery for the FA-18C Hornet:
+- `FA18C_PaintKit.fbx`: exterior model with only the paintable surfaces, using the same UV layout as the mod. Import it into Substance Painter or Blender.
+- `FA18C_PaintKit_WithReference.fbx`: the same model plus the canopy glass and the parts that keep their own textures, in plain grey.
+- `FA18C_PaintKit.blend`: Blender file with the base texture already connected.
+- `FA18C_Livery_Base.png`: the default 4096 x 4096 livery texture to paint over.
+- UV guides: wireframe, a colour map showing which side of the jet each texture area belongs to, and the lines drawn over the base texture.
+- `README.md` with step-by-step instructions, and `LiveryBuilder.cs` (see below).
+
+Liveries are built and uploaded the official way, as in the Steam guide [How to Build and Publish a Livery](https://steamcommunity.com/sharedfiles/filedetails/?id=3656861098). Paint one colour texture, build it with the Nuclear Option Livery Project in Unity, test it from `AppData\LocalLow\Shockfront\NuclearOption\Skins`, and upload it from **Main Menu > Workshop > Upload > Aircraft Livery**.
+
+The one extra step is that the livery builder doesn't list modded jets. Use the kit's `LiveryBuilder.cs`, or add `"FA-18C Hornet"` to the `Aircraft` list in `Assets/Scripts/Editor/LiveryBuilder.cs`, and pick **FA-18C Hornet** as the aircraft. Suggested glossiness is 0.40. Players need this mod installed to see the livery.
 
 ---
 
@@ -151,11 +167,23 @@ Edit `BepInEx\config\fa18c.hornet.systems.cfg` (created after the first launch):
 | `RollRateLimiter` | Roll rate cut with air-to-ground stores or tanks on the wing pylons |
 | `MountSelfCollisionFix` | Weapons hung on the jet (any mod's, e.g. Multi-Missile) never collide with the jet's own parts, so they can't damage it at spawn (default on) |
 | `MountCollisionLog` | Writes a log line for every weapon mount the fix is applied to (for bug reports, default off) |
+| `GunMuzzleFix` | Muzzle flash and smoke at the gun port on top of the nose (default on) |
+| `CockpitClipFix` | Keeps the cockpit view from cutting away the instrument panel after an airfield spawn (default on) |
 | `FuelModel` | `AltitudeOnly` (default): fuel drops with altitude, never above the old rate. `Realistic`: also burns more at low-level high speed. `Off`: stock game fuel |
 
 ---
 
-## Changelog (0.4 → 0.6)
+## Changelog (0.4 → 0.7)
+
+### 0.7.0 (plugin 0.7.0): extended update
+- **Livery Paint Kit (new, separate download):** exterior FBX models, base texture, UV guides and instructions for making your own liveries; see [Make your own livery](#make-your-own-livery-livery-paint-kit).
+- **[plugin] Gun:** the muzzle flash and smoke now appear at the gun port on top of the nose, at the front of the anti-glare panel (before they showed 0.7 m further forward). The bullets leave from the same place as before.
+- **Afterburner deeper in the nozzles:** the nozzle glow now sits deep in the tailpipe at the turbine face instead of at the nozzle exit, and the flame starts 0.55 m inside the nozzle (same length behind the jet).
+- **Canopy glass** is clear from the cockpit (no more milky haze); it looks the same from outside.
+- **Two engines.** The Hornet had a single game engine with two flames (it came from the single-engine FS-12). Now each F404 is its own engine with its own nozzle, flame, sound and heat haze, at half the old thrust and fuel flow each, so total thrust, fuel burn and IR signature are unchanged, and the plugin's thrust and fuel models work as before. The electrical generators charge at the same total rate. Losing an engine now costs half the thrust. The damage display shows ENGINE 1 / ENGINE 2 fires.
+- **Fuselage stations moved 0.30 m aft** (and 2 cm out), so missile noses sit about 0.2 m behind the intake lips instead of poking out in front. The stations stay parallel with the fuselage, so neither end of the missile sinks into it.
+- **[plugin] Cockpit camera on airfield spawns:** fixed the view that sometimes showed the nose through a missing instrument panel. Cause: a game bug sets the camera's near clip plane to 1 m when the spawn menu closes, which cuts away everything closer than 1 m (the panel and HUD frame). The plugin holds it at 0.2 m in the cockpit. Same fix in the F-14 plugin.
+- **Gear:** the nose leg now finishes retracting with the main legs, so the main doors run one clean cycle.
 
 ### 0.6.4 (plugin 0.6.4)
 - **[plugin] Weapons no longer damage the jet at spawn.** Some Multi-Missile racks have solid collision shapes that reach into a neighbouring part of the Hornet (single missiles on the fuselage stations and centreline, the Exocet on the wing pylons). The game pushed the parts apart when the jet spawned, which damaged them. Weapons hung on the Hornet now ignore collisions with its own parts; they still hit the ground, other aircraft and bullets normally. Works for any mod's weapons (setting `MountSelfCollisionFix`, on by default). Multi-Missile weapons need this plugin version.
@@ -188,6 +216,7 @@ Edit `BepInEx\config\fa18c.hornet.systems.cfg` (created after the first launch):
   - The wing breaks at about 11.5 g or −7.7 g.
   - The real-world 0.5.5 behaviour is still available with `FlightProfile = NATOPS`.
 - **Roll limiter** with air-to-ground stores or tanks on the wing pylons kept as a Hornet weakness.
+
 
 ### Plugin 0.5.5 (NATOPS performance review)
 - **Speed at altitude:** drag and thrust refitted to the NATOPS charts. The jet no longer stalls out near Mach 1 between 10,000 and 35,000 ft: at 30,000 ft, Mach 1.3 takes about 80 s instead of about 4 minutes. It's no longer unrealistically fast above 45,000 ft.

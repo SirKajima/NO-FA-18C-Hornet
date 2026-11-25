@@ -14,7 +14,7 @@ You only need this to change the mod. To play it, use the files in [`release/`](
 1. Set up nikkorap's **Blueprinter-Editor** Unity project (Unity 2022.3, as its guide describes) with the game's DLLs imported.
 2. Copy `unity/Assets/` from this repo into the Blueprinter-Editor project's `Assets/` folder (it adds `Assets/Blueprinter/Mods/FA18C/` and the editor scripts).
 3. Open the project and let Unity import.
-4. Build the mod with Blueprinter's mod builder: mod key **`FA18C`**, display name **`FA-18C Hornet`**, version **`0.6.4`**. You can also run `MMCompat.BuildFA18C()` from `Assets/Editor/MMCompat.cs`, which calls `Blueprinter.ModBuilder.Build` with those values and writes to `E:/Project/NOModding/Builds`; change the path first.
+4. Build the mod with Blueprinter's mod builder: mod key **`FA18C`**, display name **`FA-18C Hornet`**, version **`0.7.0`**. You can also run `MMCompat.BuildFA18C()` from `Assets/Editor/MMCompat.cs`, which calls `Blueprinter.ModBuilder.Build` with those values and writes to `E:/Project/NOModding/Builds`; change the path first.
 5. Put the new `.nobp` in `BepInEx\plugins\` (remove the old one).
 
 **Don't** add runtime scripts (`.cs` outside `Assets/Editor`) or editor packages to the Blueprinter-Editor project: they compile into a project `Assembly-CSharp` that clashes with the game's and corrupts the bundle's serialised data.
@@ -39,3 +39,8 @@ The scripts in `unity/Assets/Editor/` are the tooling used to make the mod: pref
 
 ## Older model files
 `Mods/FA18C/Model/` holds the earlier placeholder model ("McDonnell Douglas F/A-18C Hornet 3D Model" by Rhine_Lab_Muelsyse, CC BY 4.0). The prefab still uses it for the simplified main-gear legs and one material slot, so keep the folder when you rebuild.
+
+### Extended update and livery paint kit tooling
+- `EXBuild.cs`: the prefab edits of the extended update (F-14B 0.2.0 / FA-18C 0.7.0: engine split, afterburner, gear timing, stations, glass) and the builds (`EXBuild.BuildF14B()` / `EXBuild.BuildFA18C()`, output to `E:/Project/NOModding/Builds/EXBuilds`).
+- `EXTools.cs`, `EXMeasure.cs`: diagnostics and measurement helpers used for those edits.
+- `EXLivery.cs`: exports the livery-textured surfaces of the prefab (and the other exterior parts) as OBJ in prefab space; the Livery Paint Kit FBX files are converted from these in Blender (UVs moved from tile V 1..2 into 0..1).

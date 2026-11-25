@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace FA18C
 {
-    [BepInPlugin("fa18c.hornet.systems", "FA-18C Hornet Systems", "0.6.4")]
+    [BepInPlugin("fa18c.hornet.systems", "FA-18C Hornet Systems", "0.7.0")]
     public class Plugin : BaseUnityPlugin
     {
         internal static BepInEx.Logging.ManualLogSource Log;
@@ -18,7 +18,7 @@ namespace FA18C
         internal static ConfigEntry<float> LowAltBoost, PitchResponse;
         internal static ConfigEntry<bool> TailHookOn, CarrierNoseGear, GearProbe, GearDiag, ClearTargetCam;
         internal static ConfigEntry<float> ArrestRelief;
-        internal static ConfigEntry<bool> MountCollisionFix, MountCollisionLog;
+        internal static ConfigEntry<bool> MountCollisionFix, MountCollisionLog, GunMuzzleFix, CockpitClipFix;
         internal static bool GameFeel => FlightProfile.Value == "GameFeel";
         // NATOPS: 7.5 g symmetric limit up to 32,357 lb gross weight; above it the limit keeps n*W constant
         internal const float DesignMass = 14677f;
@@ -36,6 +36,8 @@ namespace FA18C
             GearDiag = Config.Bind("Carrier", "GearDiagnostics", true, "Write a line to the BepInEx log when the contact probe saves a wheel or the nose wheel loses the deck (helps track the deck-sinking bug).");
             MountCollisionFix = Config.Bind("Weapons", "MountSelfCollisionFix", true, "Weapon mounts (including other mods' weapons such as Multi-Missile) never collide with this jet's own parts. Stops parts getting damaged at spawn when a mod's missile or bomb collider reaches into a neighbouring part.");
             MountCollisionLog = Config.Bind("Weapons", "MountCollisionLog", false, "Log a line for every mount the fix is applied to.");
+            GunMuzzleFix = Config.Bind("Weapons", "GunMuzzleFix", true, "Put the 20 mm muzzle flash and smoke at the gun port on top of the nose (the game's gun puts them 0.7 m ahead of it). The bullets are unchanged.");
+            CockpitClipFix = Config.Bind("Camera", "CockpitClipFix", true, "Keep the cockpit camera's near clip plane at 0.2 m. The game sometimes leaves it at 1 m after the spawn menu closes (airfield spawns), which cuts away the instrument panel and HUD frame.");
             ClearTargetCam = Config.Bind("General", "ClearTargetingCamera", true, "Hide your own jet (fuselage, wings, stores) from the targeting camera so it never blocks the view of the target. The landing camera is not affected.");
             Transonic = Config.Bind("Flight model", "TransonicModel", true, "Wave drag, ram thrust and real thrust lapse with altitude (real acceleration at altitude).");
             GLimits = Config.Bind("Flight model", "FcsGLimits", true, "Weight-scaled FCS limits: +7.5 g / -3 g up to 32,357 lb, the 10 g G-limit override (Stability Assist off) at all speeds.");
@@ -45,7 +47,7 @@ namespace FA18C
             RollLimiter = Config.Bind("Flight model", "RollRateLimiter", true, "NATOPS roll-rate limiter: max roll rate cut ~33% with air-to-ground stores or tanks on the wing pylons.");
             FuelModel = Config.Bind("Flight model", "FuelModel", "AltitudeOnly", new ConfigDescription("Fuel flow vs altitude and speed (NATOPS NFM-200, ~10% generous). AltitudeOnly = never burns more than the stock rate (keeps the low-level burn you tested). Realistic = also burns more at low-level high speed. Off = stock game fuel.", new AcceptableValueList<string>("AltitudeOnly", "Realistic", "Off")));
             new Harmony("fa18c.hornet.systems").PatchAll(typeof(Plugin).Assembly);
-            Log.LogInfo($"FA-18C Hornet Systems 0.6.4 loaded (profile {FlightProfile.Value})");
+            Log.LogInfo($"FA-18C Hornet Systems 0.7.0 loaded (profile {FlightProfile.Value})");
         }
         internal static bool IsHornet(Aircraft a)
         {
@@ -678,6 +680,51 @@ namespace FA18C
                 if (Plugin.MountCollisionLog.Value) Plugin.Log.LogInfo($"mount {go.name}: {own.Length} collider(s) set to ignore {n} pairs with own airframe");
             }
             catch (Exception e) { Plugin.Log.LogWarning("mount collision fix failed: " + e.Message); }
+        }
+    }
+
+    // ---------------- 0.7.0: muzzle flash/smoke at the gun port on top of the nose ----------------
+    [HarmonyPatch(typeof(Hardpoint), "SpawnMount")]
+    static class GunFlashPatch
+    {
+        static void Postfix(Hardpoint __instance, Aircraft aircraft)
+        {
+            try
+            {
+                if (!Plugin.GunMuzzleFix.Value || !Plugin.IsHornet(aircraft) || __instance == null || __instance.transform == null) return;
+                var v = Traverse.Create(__instance).Field("spawnedPrefab").GetValue();
+                GameObject go = v as GameObject; if (go == null && v is Component comp) go = comp.gameObject;
+                if (go == null) return;
+                var gun = go.GetComponentInChildren<Gun>(true); if (gun == null) return;
+                var ps = Traverse.Create(gun).Field("muzzleParticles").GetValue() as System.Collections.IEnumerable; if (ps == null) return;
+                // gun port (aircraft frame (0, 0.07, 7.05)) in the cannon hardpoint frame (hardpoint at (0, -0.05, 7.0))
+                Vector3 port = __instance.transform.TransformPoint(new Vector3(0f, 0.12f, 0.05f));
+                int n = 0; foreach (var o in ps) { var p = o as ParticleSystem; if (p == null) continue; p.transform.position = port; n++; }
+                Plugin.Log.LogInfo($"Hornet gun: {n} muzzle effects moved to the gun port");
+            }
+            catch (Exception e) { Plugin.Log.LogWarning("Hornet gun flash: " + e.Message); }
+        }
+    }
+
+    // ---------------- 0.7.0: cockpit camera near clip (game bug: AircraftSelectionMenu.OnDestroy sets it to 1 m) ----------------
+    [HarmonyPatch(typeof(CameraCockpitState), "UpdateState")]
+    static class CockpitClipPatch
+    {
+        static readonly AccessTools.FieldRef<CameraCockpitState, Aircraft> acOf = AccessTools.FieldRefAccess<CameraCockpitState, Aircraft>("aircraft");
+        static bool logged;
+        static void Postfix(CameraCockpitState __instance, CameraStateManager cam)
+        {
+            try
+            {
+                if (!Plugin.CockpitClipFix.Value || cam == null || cam.mainCamera == null) return;
+                if (!Plugin.IsHornet(acOf(__instance))) return;
+                if (cam.mainCamera.nearClipPlane > 0.21f)
+                {
+                    if (!logged) { logged = true; Plugin.Log.LogInfo($"Hornet cockpit camera near clip {cam.mainCamera.nearClipPlane} -> 0.2"); }
+                    cam.mainCamera.nearClipPlane = 0.2f;
+                }
+            }
+            catch (Exception) { }
         }
     }
 }
